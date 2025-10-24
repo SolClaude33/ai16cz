@@ -1,14 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, User } from "lucide-react";
 import czAvatar from "@assets/image_1761243437671.png";
+import type { ChatMessage as ChatMessageType } from '../types/schema';
 
-interface ChatMessageProps {
-  id: string;
-  message: string;
-  sender: "user" | "cz";
-  timestamp: string;
-  username?: string;
-}
+interface ChatMessageProps extends ChatMessageType {}
 
 export default function ChatMessage({ message, sender, timestamp, username }: ChatMessageProps) {
   const isCZ = sender === "cz";

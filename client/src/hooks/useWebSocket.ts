@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import type { EmotionType } from '@shared/schema';
+import type { EmotionType } from '../types/schema';
 
-export function useWebSocket(url: string) {
-  const [isConnected, setIsConnected] = useState(true); // Always connected for HTTP API
+export function useWebSocket(_url: string) {
+  const [isConnected] = useState(true); // Always connected for HTTP API
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [currentEmotion, setCurrentEmotion] = useState<EmotionType>('idle');
 

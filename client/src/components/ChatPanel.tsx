@@ -7,7 +7,7 @@ import ChatMessage from "./ChatMessage";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
-import type { ChatMessage as ChatMessageType } from "@shared/schema";
+import type { ChatMessage as ChatMessageType } from '../types/schema';
 import gigglesLogo from '@assets/image-removebg-preview (30)_1759978567238.png';
 
 export default function ChatPanel() {
