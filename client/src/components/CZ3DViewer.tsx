@@ -4,7 +4,7 @@ import { FBXLoader } from 'three-stdlib';
 import { GLTFLoader } from 'three-stdlib';
 import { OrbitControls } from 'three-stdlib';
 import { Sparkles } from "lucide-react";
-import type { EmotionType } from '@shared/schema';
+import type { EmotionType } from '../types/schema';
 import maxSticker1 from '@assets/image-removebg-preview (33) - copia_1759978567237.png';
 import maxSticker2 from '@assets/1211_1759978567238.png';
 import gigglesLogo from '@assets/image-removebg-preview (30)_1759978567238.png';

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Smile, Brain, PartyPopper, Frown, CircleDot, Music, HelpCircle } from "lucide-react";
-import type { EmotionType } from "@shared/schema";
+import type { EmotionType } from '../types/schema';
 
 interface AnimationControlsProps {
   onEmotionChange: (emotion: EmotionType) => void;
