@@ -12,9 +12,6 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message, sender, timestamp, username }: ChatMessageProps) {
   const isCZ = sender === "cz";
-  
-  const celebrationWords = ['great', 'awesome', 'excellent', 'perfect', 'wonderful', 'amazing', 'fantastic', 'congrat', 'success', 'good job', 'well done', 'happy', 'brilliant', 'superb'];
-  const hasCelebration = isCZ && celebrationWords.some(word => message.toLowerCase().includes(word));
 
   return (
     <div 

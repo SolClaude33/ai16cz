@@ -1,20 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { EmotionType } from '@shared/schema';
-
-interface ChatMessage {
-  id: string;
-  message: string;
-  sender: 'user' | 'cz';
-  timestamp: string;
-  emotion?: EmotionType;
-  audioBase64?: string;
-}
 
 export function useWebSocket(url: string) {
   const [isConnected, setIsConnected] = useState(true); // Always connected for HTTP API
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [currentEmotion, setCurrentEmotion] = useState<EmotionType>('idle');
-  const [viewerCount, setViewerCount] = useState(1); // Simulate viewer count
 
   const sendMessage = useCallback(async (type: string, data: any) => {
     if (type === 'user_message') {

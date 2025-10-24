@@ -2,7 +2,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle2, FileText, Shield } from "lucide-react";
 import { useState } from "react";
-import gigglesLogo from '@assets/image-removebg-preview (30)_1759978567238.png';
 
 export default function ContractAddress() {
   const [copied, setCopied] = useState(false);
