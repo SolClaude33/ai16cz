@@ -1,72 +1,114 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { EmotionType } from '@shared/schema';
 
-interface WebSocketMessage {
-  type: 'connection' | 'user_message' | 'cz_message' | 'cz_emotion' | 'viewer_count' | 'error';
-  data: any;
+interface ChatMessage {
+  id: string;
+  message: string;
+  sender: 'user' | 'cz';
+  timestamp: string;
+  emotion?: EmotionType;
+  audioBase64?: string;
 }
 
 export function useWebSocket(url: string) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+  const [isConnected, setIsConnected] = useState(true); // Always connected for HTTP API
+  const [lastMessage, setLastMessage] = useState<any>(null);
   const [currentEmotion, setCurrentEmotion] = useState<EmotionType>('idle');
-  const wsRef = useRef<WebSocket | null>(null);
+  const [viewerCount, setViewerCount] = useState(1); // Simulate viewer count
 
-  useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      setIsConnected(true);
-    };
-
-    ws.onmessage = (event) => {
+  const sendMessage = useCallback(async (type: string, data: any) => {
+    if (type === 'user_message') {
       try {
-        const message = JSON.parse(event.data);
-        setLastMessage(message);
+        // Send user message immediately
+        const userMessage = {
+          id: Date.now().toString(),
+          message: data.content,
+          sender: 'user' as const,
+          username: data.username || 'Anonymous',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
         
-        if (message.type === 'cz_emotion' && message.data.emotion) {
-          setCurrentEmotion(message.data.emotion);
+        setLastMessage({
+          type: 'user_message',
+          data: userMessage
+        });
+
+        // Set thinking emotion
+        setCurrentEmotion('thinking');
+        setLastMessage({
+          type: 'cz_emotion',
+          data: { emotion: 'thinking' }
+        });
+
+        // Call API for AI response
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: data.content }),
+        });
+
+        if (response.ok) {
+          const aiResponse = await response.json();
+          
+          // Set final emotion
+          setCurrentEmotion(aiResponse.emotion);
+          setLastMessage({
+            type: 'cz_emotion',
+            data: { emotion: aiResponse.emotion }
+          });
+
+          // Send CZ message after delay
+          setTimeout(() => {
+            const czMessage = {
+              id: (Date.now() + 1).toString(),
+              message: aiResponse.message,
+              sender: 'cz' as const,
+              timestamp: aiResponse.timestamp,
+              emotion: aiResponse.emotion,
+              audioBase64: aiResponse.audioBase64
+            };
+            
+            setLastMessage({
+              type: 'cz_message',
+              data: czMessage
+            });
+          }, 500);
+        } else {
+          throw new Error('API call failed');
         }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error('Error sending message:', error);
+        setCurrentEmotion('talking');
+        setLastMessage({
+          type: 'cz_message',
+          data: {
+            id: (Date.now() + 1).toString(),
+            message: "哎呀！处理时出现了一个小错误。你能再试一次吗？",
+            sender: 'cz',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            emotion: 'talking'
+          }
+        });
       }
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      setIsConnected(false);
-    };
-
-    // Listen for audio ended event to return to idle
-    const handleAudioEnded = () => {
-      setCurrentEmotion('idle');
-    };
-    
-    window.addEventListener('czAudioEnded', handleAudioEnded);
-
-    return () => {
-      ws.close();
-      window.removeEventListener('czAudioEnded', handleAudioEnded);
-    };
-  }, [url]);
-
-  const sendMessage = useCallback((type: string, data: any) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type, ...data }));
     }
   }, []);
 
   const sendEmotion = useCallback((emotion: EmotionType) => {
     setCurrentEmotion(emotion);
+  }, []);
+
+  // Listen for audio ended event to return to idle
+  useEffect(() => {
+    const handleAudioEnded = () => {
+      setCurrentEmotion('idle');
+    };
+    
+    window.addEventListener('czAudioEnded', handleAudioEnded);
+    return () => {
+      window.removeEventListener('czAudioEnded', handleAudioEnded);
+    };
   }, []);
 
   return { isConnected, lastMessage, sendMessage, currentEmotion, sendEmotion };
